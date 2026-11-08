@@ -15,12 +15,16 @@ def media(notas):
     media([8, 6, 10]) -> 8.0
     Dica: sum(...) e len(...) resolvem. Cuidado com a lista vazia!
     """
-    raise NotImplementedError
+    return round(sum(notas) / len(notas), 2) if notas else 0.0
 
 
 def situacao(media_final):
     """"aprovado" (média >= 7), "recuperacao" (>= 5 e < 7) ou "reprovado" (< 5)."""
-    raise NotImplementedError
+    if media_final >= 7:
+        return "aprovado"
+    if media_final >= 5:
+        return "recuperacao"
+    return "reprovado"
 
 
 # ============================================================ MISSÃO 1.2 — map: o boletim da turma
@@ -31,18 +35,25 @@ def boletim(alunos):
     Dica: uma list comprehension (ou map) usando as funções da missão 1.1.
     A lista original não pode ser alterada!
     """
-    raise NotImplementedError
+    return [
+        {
+            "nome": aluno["nome"],
+            "media": media(aluno["notas"]),
+            "situacao": situacao(media(aluno["notas"])),
+        }
+        for aluno in alunos
+    ]
 
 
 # ============================================================ MISSÃO 1.3 — filter e reduce: aprovados e ranking
 def aprovados(boletins):
     """Lista com os NOMES dos alunos aprovados, na ordem original. (filter)"""
-    raise NotImplementedError
+    return [boletim["nome"] for boletim in boletins if boletim["situacao"] == "aprovado"]
 
 
 def media_da_turma(boletins):
     """Média das médias da turma, arredondada a 2 casas. Lista vazia: 0.0. (reduce ou sum)"""
-    raise NotImplementedError
+    return round(sum(boletim["media"] for boletim in boletins) / len(boletins), 2) if boletins else 0.0
 
 
 def ranking(boletins):
@@ -50,4 +61,7 @@ def ranking(boletins):
 
     Dica: sorted(..., key=lambda b: (-b["media"], b["nome"])) devolve uma lista NOVA.
     """
-    raise NotImplementedError
+    return [
+        boletim["nome"]
+        for boletim in sorted(boletins, key=lambda boletim: (-boletim["media"], boletim["nome"]))
+    ]

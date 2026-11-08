@@ -11,51 +11,85 @@
 // ============================================================ MISSÃO 6.1 — Filtrar e somar
 /** Só as músicas desse gênero. */
 export function porGenero(musicas, genero) {
-  throw new Error("Missão 6.1 ainda não implementada: porGenero");
+  return musicas.filter((musica) => musica.genero === genero);
 }
 
 /** Soma das durações (em segundos). */
 export function duracaoTotal(musicas) {
-  throw new Error("Missão 6.1 ainda não implementada: duracaoTotal");
+  return musicas.reduce((total, musica) => total + musica.duracao, 0);
 }
 
 /** Segundos => "m:ss".   65 => "1:05"   0 => "0:00"   3725 => "62:05"   Dica: Math.floor e padStart(2, "0"). */
 export function formatarDuracao(segundos) {
-  throw new Error("Missão 6.1 ainda não implementada: formatarDuracao");
+  const minutos = Math.floor(segundos / 60);
+  const restante = segundos % 60;
+  return `${minutos}:${String(restante).padStart(2, "0")}`;
 }
 
 // ============================================================ MISSÃO 6.2 — Agrupar
 /** Agrupa os itens pelo valor que funcaoChave devolve: { chave: [itens...] }, mantendo a ordem original.
  *  Dica: reduce com um objeto NOVO a cada passo:  { ...acc, [k]: [...(acc[k] ?? []), item] } */
 export function agruparPor(lista, funcaoChave) {
-  throw new Error("Missão 6.2 ainda não implementada: agruparPor");
+  return lista.reduce((grupos, item) => {
+    const chave = funcaoChave(item);
+    return { ...grupos, [chave]: [...(grupos[chave] ?? []), item] };
+  }, {});
 }
 
 /** { chave: quantidade de itens }. Dica: use agruparPor. */
 export function contarPor(lista, funcaoChave) {
-  throw new Error("Missão 6.2 ainda não implementada: contarPor");
+  return Object.fromEntries(
+    Object.entries(agruparPor(lista, funcaoChave)).map(([chave, itens]) => [chave, itens.length]),
+  );
 }
 
 /** { artista: soma dos plays de todas as músicas dele(a) }. */
 export function playsPorArtista(musicas) {
-  throw new Error("Missão 6.2 ainda não implementada: playsPorArtista");
+  return musicas.reduce(
+    (plays, musica) => ({
+      ...plays,
+      [musica.artista]: (plays[musica.artista] ?? 0) + musica.plays,
+    }),
+    {},
+  );
 }
 
 // ============================================================ MISSÃO 6.3 — Ordenar e o chefão
 /** Lista NOVA ordenada pelo valor de funcaoChave (crescente; decrescente se o 3º argumento for true).
  *  Empate: mantém a ordem original. Dica: [...lista].sort((a, b) => ...) */
 export function ordenarPor(lista, funcaoChave, decrescente = false) {
-  throw new Error("Missão 6.3 ainda não implementada: ordenarPor");
+  return [...lista].sort((a, b) => {
+    const chaveA = funcaoChave(a);
+    const chaveB = funcaoChave(b);
+    const comparacao = chaveA < chaveB ? -1 : chaveA > chaveB ? 1 : 0;
+    return decrescente ? -comparacao : comparacao;
+  });
 }
 
 /** Títulos das n músicas mais tocadas, da mais para a menos tocada. Empate: ordem alfabética do título. */
 export function maisTocadas(musicas, n) {
-  throw new Error("Missão 6.3 ainda não implementada: maisTocadas");
+  return [...musicas]
+    .sort((a, b) => b.plays - a.plays || a.titulo.localeCompare(b.titulo))
+    .slice(0, n)
+    .map((musica) => musica.titulo);
 }
 
 /** O CHEFÃO:  { totalMusicas, duracaoTotal: "m:ss", generos: { genero: quantidade },
  *               topArtista: nome do artista com mais plays no total (empate: ordem alfabética; null se vazio),
  *               top3: títulos das 3 mais tocadas }  */
 export function relatorioPlaylist(musicas) {
-  throw new Error("Missão 6.3 ainda não implementada: relatorioPlaylist");
+  const playsPorArtistaTotal = playsPorArtista(musicas);
+  const topArtista =
+    Object.entries(playsPorArtistaTotal).sort(
+      ([artistaA, playsA], [artistaB, playsB]) =>
+        playsB - playsA || artistaA.localeCompare(artistaB),
+    )[0]?.[0] ?? null;
+
+  return {
+    totalMusicas: musicas.length,
+    duracaoTotal: formatarDuracao(duracaoTotal(musicas)),
+    generos: contarPor(musicas, (musica) => musica.genero),
+    topArtista,
+    top3: maisTocadas(musicas, 3),
+  };
 }
