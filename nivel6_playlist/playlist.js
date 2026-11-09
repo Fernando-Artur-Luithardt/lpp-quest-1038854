@@ -11,51 +11,72 @@
 // ============================================================ MISSÃO 6.1 — Filtrar e somar
 /** Só as músicas desse gênero. */
 export function porGenero(musicas, genero) {
-  throw new Error("Missão 6.1 ainda não implementada: porGenero");
+  return musicas.filter((m) => m.genero === genero);
 }
 
 /** Soma das durações (em segundos). */
 export function duracaoTotal(musicas) {
-  throw new Error("Missão 6.1 ainda não implementada: duracaoTotal");
+  return musicas.reduce((total, m) => total + m.duracao, 0);
 }
 
 /** Segundos => "m:ss".   65 => "1:05"   0 => "0:00"   3725 => "62:05"   Dica: Math.floor e padStart(2, "0"). */
 export function formatarDuracao(segundos) {
-  throw new Error("Missão 6.1 ainda não implementada: formatarDuracao");
+  return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, "0")}`;
 }
 
 // ============================================================ MISSÃO 6.2 — Agrupar
 /** Agrupa os itens pelo valor que funcaoChave devolve: { chave: [itens...] }, mantendo a ordem original.
  *  Dica: reduce com um objeto NOVO a cada passo:  { ...acc, [k]: [...(acc[k] ?? []), item] } */
 export function agruparPor(lista, funcaoChave) {
-  throw new Error("Missão 6.2 ainda não implementada: agruparPor");
+  return lista.reduce((acc, item) => {
+    const chave = funcaoChave(item);
+    const grupo = Object.hasOwn(acc, chave) ? acc[chave] : [];
+    return { ...acc, [chave]: [...grupo, item] };
+  }, {});
 }
 
 /** { chave: quantidade de itens }. Dica: use agruparPor. */
 export function contarPor(lista, funcaoChave) {
-  throw new Error("Missão 6.2 ainda não implementada: contarPor");
+  return Object.fromEntries(Object.entries(agruparPor(lista, funcaoChave))
+    .map(([chave, itens]) => [chave, itens.length]));
 }
 
 /** { artista: soma dos plays de todas as músicas dele(a) }. */
 export function playsPorArtista(musicas) {
-  throw new Error("Missão 6.2 ainda não implementada: playsPorArtista");
+  return Object.fromEntries(Object.entries(agruparPor(musicas, (m) => m.artista))
+    .map(([artista, itens]) => [artista, itens.reduce((total, m) => total + m.plays, 0)]));
 }
 
 // ============================================================ MISSÃO 6.3 — Ordenar e o chefão
 /** Lista NOVA ordenada pelo valor de funcaoChave (crescente; decrescente se o 3º argumento for true).
  *  Empate: mantém a ordem original. Dica: [...lista].sort((a, b) => ...) */
 export function ordenarPor(lista, funcaoChave, decrescente = false) {
-  throw new Error("Missão 6.3 ainda não implementada: ordenarPor");
+  return [...lista].sort((a, b) => {
+    const ka = funcaoChave(a);
+    const kb = funcaoChave(b);
+    const ordem = ka < kb ? -1 : ka > kb ? 1 : 0;
+    return decrescente ? -ordem : ordem;
+  });
 }
 
 /** Títulos das n músicas mais tocadas, da mais para a menos tocada. Empate: ordem alfabética do título. */
 export function maisTocadas(musicas, n) {
-  throw new Error("Missão 6.3 ainda não implementada: maisTocadas");
+  const alfabeticas = ordenarPor(musicas, (m) => m.titulo);
+  return ordenarPor(alfabeticas, (m) => m.plays, true)
+    .slice(0, Math.max(0, n)).map((m) => m.titulo);
 }
 
 /** O CHEFÃO:  { totalMusicas, duracaoTotal: "m:ss", generos: { genero: quantidade },
  *               topArtista: nome do artista com mais plays no total (empate: ordem alfabética; null se vazio),
  *               top3: títulos das 3 mais tocadas }  */
 export function relatorioPlaylist(musicas) {
-  throw new Error("Missão 6.3 ainda não implementada: relatorioPlaylist");
+  const artistas = ordenarPor(Object.entries(playsPorArtista(musicas)), ([nome]) => nome);
+  const ranking = ordenarPor(artistas, ([, plays]) => plays, true);
+  return {
+    totalMusicas: musicas.length,
+    duracaoTotal: formatarDuracao(duracaoTotal(musicas)),
+    generos: contarPor(musicas, (m) => m.genero),
+    topArtista: ranking[0]?.[0] ?? null,
+    top3: maisTocadas(musicas, 3),
+  };
 }
